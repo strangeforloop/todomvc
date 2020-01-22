@@ -7,4 +7,4 @@ This is an exercise in removing jQuery from the entire jQuery iteration of the T
 This was done for the purpose of practicing handling events and DOM elements with pure JavaScript as well as for the purpose of making sense of an unfamiliar codebase.
 <br/>
 <br/>
-You can find these specific changes in /examples/jquery/js/app.js.
+You can find my specific changes in /examples/jquery/js/app.js.
