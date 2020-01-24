@@ -40,7 +40,7 @@ var util={
 var App={  
   init: function () {  
     this.todos=util.store('todos-jquery');  
-    this.todoTemplate=Handlebars.compile(document.getElementById('todo-template').innerHTML);  
+    // this.todoTemplate=Handlebars.compile(document.getElementById('todo-template').innerHTML);  
     this.footerTemplate=Handlebars.compile(document.getElementById('footer-template').innerHTML);  
     this.bindEvents();  
 
@@ -91,8 +91,47 @@ var App={
   },
   render: function () {  
     var todos=this.getFilteredTodos();  
-    document.getElementById('todo-list').innerHTML=this.todoTemplate(todos);
+    // document.getElementById('todo-list').innerHTML=this.todoTemplate(todos);
+    var todoList = document.getElementById('todo-list');
 
+    // clear the old stuff rendering on the screen
+    todoList.innerHTML = '';
+
+    var todo;
+    for (todo of todos) {
+
+      var completed = todo.completed;
+      var title = todo.title;
+      var id = todo.id;
+
+      var li = document.createElement('LI');
+
+      li.setAttribute("data-id", id);
+
+      var checkedProp;
+      
+      if (completed) {
+        li.setAttribute("class", "completed");
+        checkedProp = 'checked';
+      } else {
+        checkedProp = '';
+      }
+
+      li.innerHTML = `
+        <div class="view">
+          <input class="toggle" type="checkbox" ${checkedProp}>
+				  <label>${title}</label>
+          <button class="destroy"></button>
+        </div>
+        <input class="edit" value=${title}>
+      `;
+
+      // console.log(li);
+      todoList.appendChild(li);
+    }
+
+    // console.log(todoList);
+    
     if (todos.length>0) {
       document.getElementById('main').style.display='block';
     } else {
@@ -105,8 +144,12 @@ var App={
     util.store('todos-jquery', this.todos);  
   },
   renderFooter: function () {  
-    var todoCount=this.todos.length;  
-    var activeTodoCount=this.getActiveTodos().length;  
+    var todoCount = this.todos.length;  
+    var activeTodoCount = this.getActiveTodos().length;  
+    var activeTodoWord=util.pluralize(activeTodoCount, 'item');
+    var completedTodos = todoCount - activeTodoCount;
+    // already have filter
+
     var template=this.footerTemplate({  
       activeTodoCount: activeTodoCount,  
       activeTodoWord: util.pluralize(activeTodoCount, 'item'),  
@@ -114,12 +157,61 @@ var App={
       filter: this.filter  
     });
 
+    var showButton;
+ 
+    // if completed todos is true, append a sibling after the ul
+
+    var filterAll = '';
+    var filterActive = '';
+    var filterCompleted = '';
+
+    if (this.filter === 'all') {
+      filterAll = 'class="selected"';
+    } 
+
+    if (this.filter === 'active') {
+      filterActive= 'class="selected"';
+    }
+
+    if (this.filter === 'completed') {
+      filterCompleted= 'class="selected"';
+    }
+
+    var clearButton = document.createElement('BUTTON');
+    clearButton.setAttribute("id", "clear-completed");
+    clearButton.innerText = 'Clear completed';
+
+    var footerHTML = `
+      <span id="todo-count"><strong>${activeTodoCount}</strong> ${activeTodoWord} left</span>
+      <ul id="filters">
+        <li>
+          <a ${filterAll} href="#/all">All</a>
+				</li>
+        <li>
+          <a ${filterActive} href="#/active">Active</a>
+				</li>
+        <li>
+          <a ${filterCompleted} href="#/completed">Completed</a>
+				</li>
+			</ul>
+    `;
+    
+    // need to move buttom rendering to below the DOM changes
+    console.log(footerHTML);
+
     if (todoCount>0) {
-      document.getElementById('footer').innerHTML=template;
+      // document.getElementById('footer').innerHTML=template;
+      document.getElementById('footer').innerHTML = footerHTML;
       document.getElementById('footer').style.display='block';
     } else {
       document.getElementById('footer').style.display='none';
     };
+
+    // render button
+    if (completedTodos) {
+      var ulEl=document.getElementById('filters');
+      ulEl.insertAdjacentElement('afterend', clearButton);
+    }
   },
   toggleAll: function (e) {  
     var isChecked=e.target.checked;
